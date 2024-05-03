@@ -12,14 +12,14 @@ const AddProduct = () => {
   const [products, setProducts] = useState([]);
 
   GetSubCategories({
-    setSubcategories: setSubCategories,
+    setSubCategories,
   });
 
   const { isLoading } = GetCategories({
-    setCategories: setCategories,
+    setCategories,
   });
 
-  const { refetch } = GetProducts({ setProducts: setProducts });
+  const { refetch } = GetProducts({ setProducts });
 
   return (
     <section className="flex flex-col items-center px-4 my-5 text-2xl font-semibold text-white">

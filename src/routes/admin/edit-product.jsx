@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { GetProductWithId } from "../../actions/get-products";
 import SizeFields from "../../components/admin/size-fields";
 import Button from "../../components/ui/button";
+import { ImagePlus, Trash2 } from "lucide-react";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -18,14 +19,14 @@ const EditProduct = () => {
   const [price_lg, setPrice_lg] = useState("");
 
   const [sizes, setSizes] = useState("1");
-  // const [imagePreview, setImagePreview] = useState();
+  const [imagePreview, setImagePreview] = useState();
 
   GetProductWithId({ setProduct, id });
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    // imageCover: null,
+    imageCover: null,
     price: [],
   });
 
@@ -45,16 +46,15 @@ const EditProduct = () => {
         ...prevData,
         title: product.result.title || "",
         description: product.result.description || "",
-        // imageCover: product.result.imageCover || "",
         price: product.result.price || [],
       }));
 
-      // setImagePreview(
-      //   product.result?.imageCover.replace(
-      //     "undefined",
-      //     `${import.meta.env.VITE_REACT_IMAGES_URL}/`
-      //   )
-      // );
+      setImagePreview(
+        product.result?.imageCover.replace(
+          "undefined/",
+          `${import.meta.env.VITE_REACT_IMAGES_URL}/`
+        )
+      );
 
       // Set sizes state to the length of the price array
       setSizes(product.result.price.length.toString());
@@ -69,10 +69,13 @@ const EditProduct = () => {
     e.preventDefault();
     toast.dismiss();
 
+    // Handling Form Data
     const formdata = new FormData();
     formdata.append("title", formData.title);
     formdata.append("description", formData.description);
-    // formdata.append("imageCover", formData.imageCover);
+    if (formData.imageCover) {
+      formdata.append("imageCover", formData.imageCover);
+    }
     formdata.append("price.0.pr", price_basic);
     formdata.append("price.0.size", "basic");
     if (price_md) {
@@ -83,6 +86,8 @@ const EditProduct = () => {
       formdata.append("price.2.pr", price_lg);
       formdata.append("price.2.size", "lg");
     }
+
+    // API Request
     try {
       await axios.put(
         `${import.meta.env.VITE_REACT_API_URL}/products/${id}`,
@@ -103,14 +108,16 @@ const EditProduct = () => {
     }));
   };
 
-  // const handleImageChange = (e) => {
-  //   const file = e.target.files[0];
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     imageCover: file,
-  //   }));
-  //   setImagePreview(URL.createObjectURL(file));
-  // };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        imageCover: file,
+      }));
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   if (!product)
     return (
@@ -156,7 +163,7 @@ const EditProduct = () => {
         </div>
 
         {/* Image */}
-        {/* <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6">
           <label htmlFor="Image Preview" className="text-xl font-bold">
             Image Preview
           </label>
@@ -172,16 +179,14 @@ const EditProduct = () => {
               onChange={handleImageChange}
             />
             {!formData.imageCover ? (
-              <span className="flex items-center justify-between w-full gap-2 transition duration-300 image group-hover:text-green-300">
-                <p>Upload Image</p>
+              <span className="flex items-center justify-between gap-2 transition duration-300 image group-hover:text-green-300">
+                <p>New Image</p>
                 <ImagePlus />
               </span>
             ) : (
               <div className="flex items-center justify-between w-full gap-2 truncate max-w-52">
                 <p className="items-start py-1 overflow-hidden text-blue-500 text-ellipsis">
-                  {formData.imageCover.name
-                    ? formData.imageCover.name
-                    : formData.imageCover !== "" && "Current Image"}
+                  {imagePreview ? formData.imageCover.name : "Current Image"}
                 </p>
                 <Trash2
                   className="overflow-visible hover:text-red-400 "
@@ -190,7 +195,12 @@ const EditProduct = () => {
                       ...prevData,
                       imageCover: null,
                     }));
-                    setImagePreview(null);
+                    setImagePreview(
+                      product.result?.imageCover.replace(
+                        "undefined/",
+                        `${import.meta.env.VITE_REACT_IMAGES_URL}/`
+                      )
+                    );
                   }}
                   size={20}
                 />
@@ -202,7 +212,7 @@ const EditProduct = () => {
             alt="image preview"
             className="flex h-48 rounded w-44"
           />
-        </div> */}
+        </div>
 
         {/* Sizes & Submit Button*/}
         <div className="flex flex-col items-center gap-y-6">

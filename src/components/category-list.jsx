@@ -32,7 +32,7 @@ const CategoryList = ({ categoryFilter }) => {
   const [categories, setCategories] = useState([]);
   const [selected, setSelected] = useState();
 
-  GetCategories({ setCategories: setCategories });
+  GetCategories({ setCategories });
 
   // to change ui when selecting a category
   function handleOnClick(categoryId) {

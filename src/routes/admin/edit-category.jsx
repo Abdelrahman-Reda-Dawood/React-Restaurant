@@ -5,17 +5,20 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { GetCategoryWithId } from "../../actions/get-categories";
 import Button from "../../components/ui/button";
+import { ImagePlus, Trash2 } from "lucide-react";
 
 const EditCategory = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [category, setCategory] = useState(null);
+  const [imagePreview, setImagePreview] = useState();
 
   GetCategoryWithId({ setCategory, id });
 
   const [formData, setFormData] = useState({
     name: "",
+    image: null,
   });
 
   useEffect(() => {
@@ -24,6 +27,13 @@ const EditCategory = () => {
         ...prevData,
         name: category.result.name || "",
       }));
+
+      setImagePreview(
+        category.result?.image.replace(
+          "undefined",
+          `${import.meta.env.VITE_REACT_IMAGES_URL}/`
+        )
+      );
     }
   }, [category]);
 
@@ -31,10 +41,14 @@ const EditCategory = () => {
     e.preventDefault();
     toast.dismiss();
 
+    // Handling Form Data
     const formdata = new FormData();
     formdata.append("name", formData.name);
-    // formdata.append("imageCover", formData.imageCover);
+    if (formData.image) {
+      formdata.append("image", formData.image);
+    }
 
+    // API Request
     try {
       await axios.put(
         `${import.meta.env.VITE_REACT_API_URL}/categories/${id}`,
@@ -53,6 +67,17 @@ const EditCategory = () => {
       ...prevData,
       [name]: value,
     }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prevData) => ({
+        ...prevData,
+        image: file,
+      }));
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
   if (!category)
@@ -93,7 +118,7 @@ const EditCategory = () => {
         </div>
 
         {/* Image */}
-        {/* <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-6">
           <label htmlFor="Image Preview" className="text-xl font-bold">
             Image Preview
           </label>
@@ -105,29 +130,32 @@ const EditCategory = () => {
               accept="image/*"
               value={""}
               className="hidden image"
-              disabled={formData.imageCover}
+              disabled={formData.image}
               onChange={handleImageChange}
             />
-            {!formData.imageCover ? (
-              <span className="flex items-center justify-between w-full gap-2 transition duration-300 image group-hover:text-green-300">
-                <p>Upload Image</p>
+            {!formData.image ? (
+              <span className="flex items-center justify-between gap-2 transition duration-300 image group-hover:text-green-300">
+                <p>New Image</p>
                 <ImagePlus />
               </span>
             ) : (
               <div className="flex items-center justify-between w-full gap-2 truncate max-w-52">
                 <p className="items-start py-1 overflow-hidden text-blue-500 text-ellipsis">
-                  {formData.imageCover.name
-                    ? formData.imageCover.name
-                    : formData.imageCover !== "" && "Current Image"}
+                  {imagePreview ? formData.image.name : "Current Image"}
                 </p>
                 <Trash2
                   className="overflow-visible hover:text-red-400 "
                   onClick={() => {
                     setFormData((prevData) => ({
                       ...prevData,
-                      imageCover: null,
+                      image: null,
                     }));
-                    setImagePreview(null);
+                    setImagePreview(
+                      category.result?.image.replace(
+                        "undefined/",
+                        `${import.meta.env.VITE_REACT_IMAGES_URL}/`
+                      )
+                    );
                   }}
                   size={20}
                 />
@@ -139,7 +167,7 @@ const EditCategory = () => {
             alt="image preview"
             className="flex h-48 rounded w-44"
           />
-        </div> */}
+        </div>
       </div>
     </form>
   );

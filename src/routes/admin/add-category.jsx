@@ -15,7 +15,7 @@ const AddCategory = () => {
   }, []);
 
   const { refetch } = GetCategories({
-    setCategories: setCategories,
+    setCategories,
   });
 
   if (!isMounted) {
